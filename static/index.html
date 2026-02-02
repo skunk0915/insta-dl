@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insta-DL | Instagram Video Downloader</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #833ab4;
+            --secondary: #fd1d1d;
+            --accent: #fcb045;
+            --bg: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+            z-index: 10;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2rem;
+            padding: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 1.25rem 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(131, 58, 180, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 1.25rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 1rem;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(131, 58, 180, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(131, 58, 180, 0.5);
+            filter: brightness(1.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            filter: grayscale(0.5);
+        }
+
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result {
+            margin-top: 2rem;
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .video-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .thumbnail {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+
+        .success-msg {
+            color: #4ade80;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .error-msg {
+            color: #f87171;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        /* Bg circles */
+        .circle {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 1;
+        }
+
+        .circle-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(131, 58, 180, 0.3);
+            top: -100px;
+            right: -100px;
+        }
+
+        .circle-2 {
+            width: 300px;
+            height: 300px;
+            background: rgba(253, 29, 29, 0.2);
+            bottom: -50px;
+            left: -50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+
+    <div class="container">
+        <header>
+            <h1>Insta-DL</h1>
+            <p>Instagram動画を最高画質で保存します</p>
+        </header>
+
+        <main class="card">
+            <div class="input-group">
+                <input type="text" id="urlInput" placeholder="https://www.instagram.com/reel/..." autocomplete="off">
+            </div>
+            <button id="dlBtn">
+                <span class="loader" id="loader"></span>
+                <span id="btnText">動画をダウンロード</span>
+            </button>
+            <div id="errorMsg" class="error-msg"></div>
+
+            <div class="result" id="resultArea">
+                <div class="video-card">
+                    <img id="thumb" class="thumbnail" src="" alt="Thumbnail">
+                    <div id="videoTitle" style="font-weight: 600;"></div>
+                    <a id="fileLink" href="#" style="text-decoration: none;">
+                        <button type="button" style="background: #4ade80; box-shadow: 0 10px 15px -3px rgba(74, 222, 128, 0.4);">
+                            <span>準備完了！保存する</span>
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const dlBtn = document.getElementById('dlBtn');
+        const urlInput = document.getElementById('urlInput');
+        const loader = document.getElementById('loader');
+        const btnText = document.getElementById('btnText');
+        const resultArea = document.getElementById('resultArea');
+        const errorMsg = document.getElementById('errorMsg');
+        const thumb = document.getElementById('thumb');
+        const videoTitle = document.getElementById('videoTitle');
+        const fileLink = document.getElementById('fileLink');
+
+        dlBtn.addEventListener('click', async () => {
+            const url = urlInput.value.trim();
+            if (!url) {
+                showError('URLを入力してください');
+                return;
+            }
+
+            setLoading(true);
+            resultArea.style.display = 'none';
+            errorMsg.textContent = '';
+
+            try {
+                // First get info to show thumbnail
+                const infoRes = await fetch('/api/info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                if (!infoRes.ok) {
+                    const err = await infoRes.json();
+                    throw new Error(err.detail || '情報の取得に失敗しました');
+                }
+
+                const info = await infoRes.json();
+                thumb.src = info.thumbnail;
+                videoTitle.textContent = info.title;
+
+                // Then start actual download to server
+                const dlRes = await fetch('/api/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                if (!dlRes.ok) {
+                    const err = await dlRes.json();
+                    throw new Error(err.detail || 'ダウンロードに失敗しました');
+                }
+
+                const dlResult = await dlRes.json();
+                fileLink.href = `/api/file/${dlResult.file_id}`;
+                fileLink.setAttribute('download', dlResult.filename);
+                
+                resultArea.style.display = 'block';
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        function setLoading(isLoading) {
+            dlBtn.disabled = isLoading;
+            loader.style.display = isLoading ? 'inline-block' : 'none';
+            btnText.textContent = isLoading ? '解析中...' : '動画をダウンロード';
+        }
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+        }
+    </script>
+</body>
+</html>
