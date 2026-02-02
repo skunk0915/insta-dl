@@ -40,6 +40,8 @@ DOWNLOAD_DIR = "downloads"
 if not os.path.exists(DOWNLOAD_DIR):
     os.makedirs(DOWNLOAD_DIR)
 
+import requests
+
 @app.post("/api/info")
 async def get_info(request: Request):
     data = await request.json()
@@ -56,9 +58,26 @@ async def get_info(request: Request):
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
+            thumb_url = info.get("thumbnail")
+            thumb_id = str(uuid.uuid4())
+            local_thumb_name = f"thumb_{thumb_id}.jpg"
+            local_thumb_path = os.path.join(DOWNLOAD_DIR, local_thumb_name)
+            
+            # Download thumbnail locally
+            if thumb_url:
+                try:
+                    r = requests.get(thumb_url, stream=True, timeout=10)
+                    if r.status_code == 200:
+                        with open(local_thumb_path, 'wb') as f:
+                            shutil.copyfileobj(r.raw, f)
+                    else:
+                        local_thumb_name = None
+                except Exception:
+                    local_thumb_name = None
+
             return {
                 "title": info.get("title", "Instagram Video"),
-                "thumbnail": info.get("thumbnail"),
+                "thumbnail": f"/api/file/{local_thumb_name}" if local_thumb_name else thumb_url,
                 "duration": info.get("duration"),
                 "url": info.get("url"),
                 "ext": info.get("ext", "mp4")
