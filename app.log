@@ -1,0 +1,8 @@
+2026-02-14 05:18:06,504 DEBUG: Using selector: KqueueSelector
+2026-02-14 05:18:12,134 DEBUG: Using selector: KqueueSelector
+2026-02-14 05:18:12,138 INFO: Info request for URL: https://www.instagram.com/reel/DTHwvvxETEF/
+2026-02-14 05:18:13,435 DEBUG: Using selector: KqueueSelector
+2026-02-14 05:18:13,506 DEBUG: Using selector: KqueueSelector
+2026-02-14 05:18:13,509 INFO: Download request for URL: https://www.instagram.com/reel/DTHwvvxETEF/
+2026-02-14 05:18:13,626 INFO: Starting yt-dlp download...
+2026-02-14 05:18:14,345 INFO: Download finished.

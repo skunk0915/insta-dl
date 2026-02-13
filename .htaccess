@@ -1,0 +1,18 @@
+DirectoryIndex index.cgi index.html
+
+RewriteEngine On
+RewriteBase /insta-dl/
+
+# Ensure index.cgi itself doesn't cause infinite loop
+RewriteRule ^index\.cgi$ - [L]
+
+# If the request is NOT for a real file (like css, js, images)
+# redirect everything to index.cgi
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.cgi/$1 [L,QSA]
+
+# Fix for POST requests: ensure they are handled by CGI
+<Files "api/*">
+    SetHandler cgi-script
+</Files>

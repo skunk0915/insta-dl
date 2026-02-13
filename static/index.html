@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -141,17 +142,31 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .result {
@@ -215,6 +230,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="circle circle-1"></div>
     <div class="circle circle-2"></div>
@@ -240,7 +256,8 @@
                     <img id="thumb" class="thumbnail" src="" alt="Thumbnail">
                     <div id="videoTitle" style="font-weight: 600;"></div>
                     <a id="fileLink" href="#" style="text-decoration: none;">
-                        <button type="button" style="background: #4ade80; box-shadow: 0 10px 15px -3px rgba(74, 222, 128, 0.4);">
+                        <button type="button"
+                            style="background: #4ade80; box-shadow: 0 10px 15px -3px rgba(74, 222, 128, 0.4);">
                             <span>準備完了！保存する</span>
                         </button>
                     </a>
@@ -273,35 +290,47 @@
 
             try {
                 // First get info to show thumbnail
-                const infoRes = await fetch('/api/info', {
+                const infoRes = await fetch('/insta-dl/api/info', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url })
                 });
 
                 if (!infoRes.ok) {
-                    const err = await infoRes.json();
-                    throw new Error(err.detail || '情報の取得に失敗しました');
+                    const text = await infoRes.text();
+                    try {
+                        const err = JSON.parse(text);
+                        throw new Error(err.detail || '情報の取得に失敗しました');
+                    } catch(e) {
+                        throw new Error('サーバーエラーが発生しました');
+                    }
                 }
 
                 const info = await infoRes.json();
-                thumb.src = info.thumbnail;
+                thumb.src = info.thumbnail.startsWith('/') ? info.thumbnail : `/insta-dl/${info.thumbnail}`;
                 videoTitle.textContent = info.title;
 
                 // Then start actual download to server
-                const dlRes = await fetch('/api/download', {
+                const dlRes = await fetch('/insta-dl/api/download', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url })
                 });
 
+
                 if (!dlRes.ok) {
-                    const err = await dlRes.json();
-                    throw new Error(err.detail || 'ダウンロードに失敗しました');
+                    const text = await dlRes.text();
+                    try {
+                        const err = JSON.parse(text);
+                        throw new Error(err.detail || 'ダウンロードに失敗しました');
+                    } catch(e) {
+                        throw new Error('サーバーエラーが発生しました');
+                    }
                 }
 
                 const dlResult = await dlRes.json();
-                fileLink.href = `/api/file/${dlResult.file_id}`;
+                fileLink.href = `api/file/${dlResult.file_id}`;
+
                 fileLink.setAttribute('download', dlResult.filename);
                 
                 resultArea.style.display = 'block';
@@ -323,4 +352,5 @@
         }
     </script>
 </body>
+
 </html>
