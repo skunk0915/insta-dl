@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insta-DL | Instagram Video Downloader</title>
+    <title>Insta-DL | Instagram Content Downloader</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -56,6 +56,7 @@
             margin-bottom: 0.5rem;
             background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.02em;
         }
@@ -238,7 +239,7 @@
     <div class="container">
         <header>
             <h1>Insta-DL</h1>
-            <p>Instagram動画を最高画質で保存します</p>
+            <p>Instagramの動画・画像を最高画質で保存します</p>
         </header>
 
         <main class="card">
@@ -247,20 +248,21 @@
             </div>
             <button id="dlBtn">
                 <span class="loader" id="loader"></span>
-                <span id="btnText">動画をダウンロード</span>
+                <span id="btnText">保存する</span>
             </button>
+            <a id="fileLink" href="#" style="text-decoration: none; display: none;">
+                <button type="button"
+                    style="background: #4ade80; box-shadow: 0 10px 15px -3px rgba(74, 222, 128, 0.4);">
+                    <span id="saveBtnText">準備完了！保存する</span>
+                </button>
+            </a>
             <div id="errorMsg" class="error-msg"></div>
 
             <div class="result" id="resultArea">
                 <div class="video-card">
                     <img id="thumb" class="thumbnail" src="" alt="Thumbnail">
                     <div id="videoTitle" style="font-weight: 600;"></div>
-                    <a id="fileLink" href="#" style="text-decoration: none;">
-                        <button type="button"
-                            style="background: #4ade80; box-shadow: 0 10px 15px -3px rgba(74, 222, 128, 0.4);">
-                            <span>準備完了！保存する</span>
-                        </button>
-                    </a>
+                    <div id="fileInfo" style="font-size: 0.8rem; color: #94a3b8; margin-top: -0.5rem;"></div>
                 </div>
             </div>
         </main>
@@ -275,7 +277,8 @@
         const errorMsg = document.getElementById('errorMsg');
         const thumb = document.getElementById('thumb');
         const videoTitle = document.getElementById('videoTitle');
-        const fileLink = document.getElementById('fileLink');
+        const saveBtnText = document.getElementById('saveBtnText');
+        const fileInfo = document.getElementById('fileInfo');
 
         dlBtn.addEventListener('click', async () => {
             const url = urlInput.value.trim();
@@ -286,11 +289,14 @@
 
             setLoading(true);
             resultArea.style.display = 'none';
+            fileLink.style.display = 'none';
+            dlBtn.style.display = 'flex';
             errorMsg.textContent = '';
+            fileInfo.textContent = '';
 
             try {
                 // First get info to show thumbnail
-                const infoRes = await fetch('/insta-dl/api/info', {
+                const infoRes = await fetch('api/info', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url })
@@ -301,17 +307,24 @@
                     try {
                         const err = JSON.parse(text);
                         throw new Error(err.detail || '情報の取得に失敗しました');
-                    } catch(e) {
+                    } catch (e) {
                         throw new Error('サーバーエラーが発生しました');
                     }
                 }
 
                 const info = await infoRes.json();
-                thumb.src = info.thumbnail.startsWith('/') ? info.thumbnail : `/insta-dl/${info.thumbnail}`;
+                thumb.src = info.thumbnail.startsWith('/') ? info.thumbnail : `/${info.thumbnail}`;
+                if (info.thumbnail.includes('api/file/')) {
+                    // Fix relative path if needed based on deployment
+                    const parts = info.thumbnail.split('api/file/');
+                    thumb.src = 'api/file/' + parts[1];
+                }
+
                 videoTitle.textContent = info.title;
+                resultArea.style.display = 'block';
 
                 // Then start actual download to server
-                const dlRes = await fetch('/insta-dl/api/download', {
+                const dlRes = await fetch('api/download', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url })
@@ -323,28 +336,38 @@
                     try {
                         const err = JSON.parse(text);
                         throw new Error(err.detail || 'ダウンロードに失敗しました');
-                    } catch(e) {
+                    } catch (e) {
                         throw new Error('サーバーエラーが発生しました');
                     }
                 }
 
                 const dlResult = await dlRes.json();
                 fileLink.href = `api/file/${dlResult.file_id}`;
-
                 fileLink.setAttribute('download', dlResult.filename);
-                
-                resultArea.style.display = 'block';
+
+                if (dlResult.is_multiple) {
+                    saveBtnText.textContent = '全アイテムを保存 (.zip)';
+                    fileInfo.textContent = '複数の画像/動画が含まれています。';
+                } else {
+                    saveBtnText.textContent = '保存する';
+                }
+
+                // Replace download button with save button
+                dlBtn.style.display = 'none';
+                fileLink.style.display = 'block';
+
             } catch (err) {
                 showError(err.message);
-            } finally {
                 setLoading(false);
+            } finally {
+                // We don't call setLoading(false) here because if success, we hide dlBtn
             }
         });
 
         function setLoading(isLoading) {
             dlBtn.disabled = isLoading;
             loader.style.display = isLoading ? 'inline-block' : 'none';
-            btnText.textContent = isLoading ? '解析中...' : '動画をダウンロード';
+            btnText.textContent = isLoading ? '解析中...' : '保存する';
         }
 
         function showError(msg) {

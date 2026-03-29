@@ -12,6 +12,7 @@ import logging
 import traceback
 import sys
 import io
+import zipfile
 
 # Setup logging to file
 LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "app.log")
@@ -72,9 +73,17 @@ async def get_info(request: Request):
                     local_thumb_name = None
 
             log_info(f"Info Success: {info.get('title')}")
+            # Determine if it's a video or image
+            content_type = "video"
+            if info.get('_type') == 'playlist' or info.get('entries'):
+                content_type = "multi"
+            elif info.get('ext') in ['jpg', 'jpeg', 'png', 'webp']:
+                content_type = "image"
+
             return {
-                "title": info.get("title", "Instagram Video"),
-                "thumbnail": f"api/file/{local_thumb_name}" if local_thumb_name else thumb_url
+                "title": info.get("title", "Instagram Content"),
+                "thumbnail": f"api/file/{local_thumb_name}" if local_thumb_name else thumb_url,
+                "type": content_type
             }
     except Exception as e:
         log_info(f"Info Error: {traceback.format_exc()}")
@@ -93,7 +102,8 @@ async def download_video(request: Request):
         log_info(f"--- Download Start: {url} ---")
         
         file_id = str(uuid.uuid4())
-        output_template = os.path.join(DOWNLOAD_DIR, f"{file_id}.%(ext)s")
+        # Use a template that includes the unique ID per entry to avoid overwrites
+        output_template = os.path.join(DOWNLOAD_DIR, f"{file_id}_%(id)s.%(ext)s")
         
         # Don't merge video/audio as ffmpeg is missing
         ydl_opts = {
@@ -102,7 +112,7 @@ async def download_video(request: Request):
             'quiet': True,
             'no_warnings': True,
             'cachedir': False,
-            'noplaylist': True,
+            'noplaylist': False, # Support carousels
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         }
 
@@ -111,27 +121,46 @@ async def download_video(request: Request):
             info = ydl.extract_info(url, download=True)
             log_info("yt-dlp execution completed.")
             
-            # Find the file
-            actual_filename = None
+            # Collect all downloaded files
             found_files = []
             for f in os.listdir(DOWNLOAD_DIR):
                 if f.startswith(file_id):
-                    actual_filename = os.path.join(DOWNLOAD_DIR, f)
                     found_files.append(f)
             
             log_info(f"Found files: {found_files}")
             
-            if not actual_filename:
+            if not found_files:
                 log_info("ERROR: No file found after download")
                 return JSONResponse(status_code=500, content={"detail": "Downloaded file not found on server."})
+
+            # Handle multiple files - create a zip
+            if len(found_files) > 1:
+                zip_filename = f"{file_id}.zip"
+                zip_path = os.path.join(DOWNLOAD_DIR, zip_filename)
+                with zipfile.ZipFile(zip_path, 'w') as zipf:
+                    for f in found_files:
+                        zipf.write(os.path.join(DOWNLOAD_DIR, f), f)
+                
+                # Cleanup individual files? Maybe not yet, let them be part of the download dir
+                actual_filename = zip_path
+                final_ext = "zip"
+            else:
+                actual_filename = os.path.join(DOWNLOAD_DIR, found_files[0])
+                final_ext = found_files[0].split('.')[-1]
 
             file_size = os.path.getsize(actual_filename)
             log_info(f"Success! File: {actual_filename} ({file_size} bytes)")
             
+            title = info.get("title", "content")
+            # Sanitize filename
+            safe_title = "".join([c for c in title if c.isalnum() or c in (' ', '-', '_')]).strip()
+            if not safe_title: safe_title = "instagram_content"
+            
             resp_data = {
-                "file_id": file_id,
-                "filename": os.path.basename(actual_filename),
-                "title": info.get("title", "video")
+                "file_id": os.path.basename(actual_filename).split('.')[0],
+                "filename": f"{safe_title}.{final_ext}",
+                "title": title,
+                "is_multiple": len(found_files) > 1
             }
             log_info(f"Returning JSON: {resp_data}")
             return resp_data
