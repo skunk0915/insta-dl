@@ -313,12 +313,7 @@
                 }
 
                 const info = await infoRes.json();
-                thumb.src = info.thumbnail.startsWith('/') ? info.thumbnail : `/${info.thumbnail}`;
-                if (info.thumbnail.includes('api/file/')) {
-                    // Fix relative path if needed based on deployment
-                    const parts = info.thumbnail.split('api/file/');
-                    thumb.src = 'api/file/' + parts[1];
-                }
+                thumb.src = info.thumbnail;
 
                 videoTitle.textContent = info.title;
                 resultArea.style.display = 'block';

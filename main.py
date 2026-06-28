@@ -48,6 +48,7 @@ async def get_info(request: Request):
         url = data.get("url")
         log_info(f"--- Info Start: {url} ---")
         
+        cookie_file = os.path.join(BASE_DIR, "cookies.txt")
         ydl_opts = {
             'format': 'best',
             'quiet': True,
@@ -55,6 +56,8 @@ async def get_info(request: Request):
             'cachedir': False,
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         }
+        if os.path.exists(cookie_file):
+            ydl_opts['cookiefile'] = cookie_file
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -106,6 +109,7 @@ async def download_video(request: Request):
         output_template = os.path.join(DOWNLOAD_DIR, f"{file_id}_%(id)s.%(ext)s")
         
         # Don't merge video/audio as ffmpeg is missing
+        cookie_file = os.path.join(BASE_DIR, "cookies.txt")
         ydl_opts = {
             'format': 'best',
             'outtmpl': output_template,
@@ -115,23 +119,31 @@ async def download_video(request: Request):
             'noplaylist': False, # Support carousels
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         }
+        if os.path.exists(cookie_file):
+            ydl_opts['cookiefile'] = cookie_file
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            log_info("Executing yt-dlp...")
-            info = ydl.extract_info(url, download=True)
-            log_info("yt-dlp execution completed.")
+            try:
+                log_info("Executing yt-dlp...")
+                info = ydl.extract_info(url, download=True)
+                log_info(f"yt-dlp execution completed. Title: {info.get('title')}")
+            except Exception as ydl_err:
+                log_info(f"yt-dlp error: {str(ydl_err)}")
+                log_info(traceback.format_exc())
+                return JSONResponse(status_code=500, content={"detail": f"解析またはダウンロード中にエラーが発生しました: {str(ydl_err)}"})
             
             # Collect all downloaded files
             found_files = []
-            for f in os.listdir(DOWNLOAD_DIR):
-                if f.startswith(file_id):
-                    found_files.append(f)
+            if os.path.exists(DOWNLOAD_DIR):
+                for f in os.listdir(DOWNLOAD_DIR):
+                    if f.startswith(file_id):
+                        found_files.append(f)
             
             log_info(f"Found files: {found_files}")
             
             if not found_files:
                 log_info("ERROR: No file found after download")
-                return JSONResponse(status_code=500, content={"detail": "Downloaded file not found on server."})
+                return JSONResponse(status_code=500, content={"detail": "コンテンツの取得に失敗しました。URLを確認してください。"})
 
             # Handle multiple files - create a zip
             if len(found_files) > 1:
@@ -139,9 +151,10 @@ async def download_video(request: Request):
                 zip_path = os.path.join(DOWNLOAD_DIR, zip_filename)
                 with zipfile.ZipFile(zip_path, 'w') as zipf:
                     for f in found_files:
-                        zipf.write(os.path.join(DOWNLOAD_DIR, f), f)
+                        file_path = os.path.join(DOWNLOAD_DIR, f)
+                        log_info(f"Adding to zip: {f} ({os.path.getsize(file_path)} bytes)")
+                        zipf.write(file_path, f)
                 
-                # Cleanup individual files? Maybe not yet, let them be part of the download dir
                 actual_filename = zip_path
                 final_ext = "zip"
             else:

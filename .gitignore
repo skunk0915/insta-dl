@@ -1,0 +1,9 @@
+cookies.txt
+venv/
+test_venv/
+*.log
+remote_app.log
+downloads/
+__pycache__/
+.vscode/sftp.json
+.DS_Store

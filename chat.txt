@@ -1,0 +1,13 @@
+2026-06-28 08:18:00
+USER: https://mizy.sakura.ne.jp/insta-dl/ で https://www.instagram.com/reel/DZR3QrYqv8H/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA== がサーバーエラーが発生しました
+AI: 本番サーバー（さくらレンタルサーバー）の Python 仮想環境が 3.8 と古く、最新の yt-dlp にアップデートできないことが原因で「Unable to extract video url」のエラーが発生していました。そのため、サーバー上に Python 3.11 環境を新規ビルドしてデプロイし、仮想環境を最新化して yt-dlp (2026.6.9) を最新版にアップデートしました。
+また、最新の yt-dlp でも Instagram のボットブロック規制（ログイン強制）により「empty media response」エラーとなる問題を回避するため、プロジェクトルートに `cookies.txt` を配置することでクッキーを使った認証を行えるように `main.py` を修正し、セキュアな接続情報が漏洩しないように `.gitignore` を追加してデプロイを完了しました。
+編集したファイルパス:
+- main.py
+- .gitignore
+
+2026-06-28 08:36:00
+USER: cookies.txt用意した。確認して
+AI: ローカルに用意されていた `cookiees.txt` のファイル名を `cookies.txt` に修正し、本番サーバーのプロジェクトルートにアップロード（デプロイ）しました。配置したクッキーを使用して、本番サーバー上からエラーが発生していたリール動画（DZR3QrYqv8H）の解析テストを行い、正常に動画のタイトル「Video by sosove_official」および情報が取得できるようになったことを確認しました。
+編集したファイルパス:
+- cookies.txt
