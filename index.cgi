@@ -7,8 +7,13 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 sys.path.insert(0, current_dir)
 
-# Add bin to path
-os.environ["PATH"] = os.path.join(current_dir, "bin") + os.pathsep + os.environ["PATH"]
+# Add bin to path and bin/lib to LD_LIBRARY_PATH
+bin_dir = os.path.join(current_dir, "bin")
+lib_dir = os.path.join(bin_dir, "lib")
+os.environ["PATH"] = bin_dir + os.pathsep + os.environ.get("PATH", "")
+if os.path.exists(lib_dir):
+    current_ld = os.environ.get("LD_LIBRARY_PATH", "")
+    os.environ["LD_LIBRARY_PATH"] = f"{lib_dir}:{current_ld}" if current_ld else lib_dir
 
 try:
     from a2wsgi import ASGIMiddleware

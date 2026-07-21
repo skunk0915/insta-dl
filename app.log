@@ -6,3 +6,10 @@
 2026-02-14 05:18:13,509 INFO: Download request for URL: https://www.instagram.com/reel/DTHwvvxETEF/
 2026-02-14 05:18:13,626 INFO: Starting yt-dlp download...
 2026-02-14 05:18:14,345 INFO: Download finished.
+2026-07-22 08:09:05,913 DEBUG: Using selector: KqueueSelector
+2026-07-22 08:09:05,913 INFO: --- Download Start: https://www.instagram.com/reel/DZR3QrYqv8H/ ---
+2026-07-22 08:09:05,958 INFO: Executing yt-dlp...
+2026-07-22 08:09:13,659 INFO: yt-dlp execution completed. Title: Video by sosove_official
+2026-07-22 08:09:13,659 INFO: Found files: ['f29efb32-43e6-4af1-9092-d0cab542240c_DZR3QrYqv8H.mp4']
+2026-07-22 08:09:13,659 INFO: Success! File: /Users/mizy/Dropbox/insta-dl/downloads/f29efb32-43e6-4af1-9092-d0cab542240c_DZR3QrYqv8H.mp4 (23540235 bytes)
+2026-07-22 08:09:13,659 INFO: Returning JSON: {'file_id': 'f29efb32-43e6-4af1-9092-d0cab542240c_DZR3QrYqv8H', 'filename': 'Video by sosove_official.mp4', 'title': 'Video by sosove_official', 'is_multiple': False}
