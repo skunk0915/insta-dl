@@ -108,10 +108,9 @@ async def download_video(request: Request):
         # Use a template that includes the unique ID per entry to avoid overwrites
         output_template = os.path.join(DOWNLOAD_DIR, f"{file_id}_%(id)s.%(ext)s")
         
-        # Don't merge video/audio as ffmpeg is missing
         cookie_file = os.path.join(BASE_DIR, "cookies.txt")
         ydl_opts = {
-            'format': 'best',
+            'format': 'bestvideo+bestaudio/best',
             'outtmpl': output_template,
             'quiet': True,
             'no_warnings': True,
@@ -119,6 +118,14 @@ async def download_video(request: Request):
             'noplaylist': False, # Support carousels
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         }
+        
+        # ffmpeg のパス検索（bin/ffmpeg または システム PATH）
+        bin_ffmpeg = os.path.join(BASE_DIR, "bin", "ffmpeg")
+        if os.path.exists(bin_ffmpeg) and os.access(bin_ffmpeg, os.X_OK):
+            ydl_opts['ffmpeg_location'] = bin_ffmpeg
+        elif shutil.which('ffmpeg'):
+            ydl_opts['ffmpeg_location'] = shutil.which('ffmpeg')
+
         if os.path.exists(cookie_file):
             ydl_opts['cookiefile'] = cookie_file
 

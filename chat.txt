@@ -11,3 +11,19 @@ USER: cookies.txt用意した。確認して
 AI: ローカルに用意されていた `cookiees.txt` のファイル名を `cookies.txt` に修正し、本番サーバーのプロジェクトルートにアップロード（デプロイ）しました。配置したクッキーを使用して、本番サーバー上からエラーが発生していたリール動画（DZR3QrYqv8H）の解析テストを行い、正常に動画のタイトル「Video by sosove_official」および情報が取得できるようになったことを確認しました。
 編集したファイルパス:
 - cookies.txt
+
+2026-07-22 06:41:45
+USER: これ動画ｄｌするとき画質は元の画質のまま？なんか画質落ちてない？
+AI: yt-dlp の設定が 'format': 'best' （単一ファイルストリームでの取得）となっていたため、映像と音声が分離配信されている高画質動画（1080p等）を取得できず中〜低画質になっていた問題を解消しました。ydl_opts のフォーマット指定を 'bestvideo+bestaudio/best' に変更し、bin/ffmpeg またはシステム PATH 内の ffmpeg を自動検出して高画質映像と高画質音声を自動マージしてダウンロードするよう main.py を改修しました。また README.md に高画質ダウンロードの仕様を更新しました。
+編集したファイルパス:
+- main.py
+- README.md
+
+2026-07-22 07:17:30
+USER: さくらレンサバに反映して
+AI: 改修した main.py、index.cgi、README.md を本番のさくらレンタルサーバー（https://mizy.sakura.ne.jp/insta-dl/）へscpデプロイし、環境変数LD_LIBRARY_PATHの設定を追加しました。本番サーバー上でAPIの疎通・解析テストを実行し、正常に応答することを確認して反省を完了しました。
+編集したファイルパス:
+- main.py
+- index.cgi
+- README.md
+- chat.txt
