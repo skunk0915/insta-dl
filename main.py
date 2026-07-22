@@ -119,6 +119,7 @@ async def download_video(request: Request):
             ffmpeg_executable = shutil.which('ffmpeg')
 
         # ffmpeg が存在する場合は最高画質マージ(bestvideo+bestaudio/best)、存在しない環境では単一ファイル(best)へ自動フォールバック
+        # 互換性(VP9非対応プレイヤーでの再生可否)よりも画質を優先する方針
         req_format = 'bestvideo+bestaudio/best' if ffmpeg_executable else 'best'
 
         ydl_opts = {
@@ -130,7 +131,7 @@ async def download_video(request: Request):
             'noplaylist': False, # Support carousels
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         }
-        
+
         if ffmpeg_executable:
             ydl_opts['ffmpeg_location'] = ffmpeg_executable
 

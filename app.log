@@ -13,3 +13,15 @@
 2026-07-22 08:09:13,659 INFO: Found files: ['f29efb32-43e6-4af1-9092-d0cab542240c_DZR3QrYqv8H.mp4']
 2026-07-22 08:09:13,659 INFO: Success! File: /Users/mizy/Dropbox/insta-dl/downloads/f29efb32-43e6-4af1-9092-d0cab542240c_DZR3QrYqv8H.mp4 (23540235 bytes)
 2026-07-22 08:09:13,659 INFO: Returning JSON: {'file_id': 'f29efb32-43e6-4af1-9092-d0cab542240c_DZR3QrYqv8H', 'filename': 'Video by sosove_official.mp4', 'title': 'Video by sosove_official', 'is_multiple': False}
+2026-07-22 08:43:51,356 INFO: --- Download Start: https://www.instagram.com/reel/DZR3QrYqv8H/ ---
+2026-07-22 08:43:51,409 INFO: Executing yt-dlp...
+2026-07-22 08:43:53,621 INFO: yt-dlp execution completed. Title: Video by sosove_official
+2026-07-22 08:43:53,621 INFO: Found files: ['e834c7a3-fd71-4b1a-a68b-ce249a597dc8_DZR3QrYqv8H.mp4']
+2026-07-22 08:43:53,621 INFO: Success! File: /Users/mizy/Dropbox/insta-dl/downloads/e834c7a3-fd71-4b1a-a68b-ce249a597dc8_DZR3QrYqv8H.mp4 (6650226 bytes)
+2026-07-22 08:43:53,621 INFO: Returning JSON: {'file_id': 'e834c7a3-fd71-4b1a-a68b-ce249a597dc8_DZR3QrYqv8H', 'filename': 'Video by sosove_official.mp4', 'title': 'Video by sosove_official', 'is_multiple': False}
+2026-07-23 07:17:40,789 INFO: --- Download Start: https://www.instagram.com/reel/DZR3QrYqv8H/ ---
+2026-07-23 07:17:40,841 INFO: Executing yt-dlp...
+2026-07-23 07:17:50,705 INFO: yt-dlp execution completed. Title: Video by sosove_official
+2026-07-23 07:17:50,706 INFO: Found files: ['36ef4080-8028-4364-91e0-c0e49f4ca1ad_DZR3QrYqv8H.mp4']
+2026-07-23 07:17:50,706 INFO: Success! File: /Users/mizy/Dropbox/insta-dl/downloads/36ef4080-8028-4364-91e0-c0e49f4ca1ad_DZR3QrYqv8H.mp4 (23540235 bytes)
+2026-07-23 07:17:50,706 INFO: Returning JSON: {'file_id': '36ef4080-8028-4364-91e0-c0e49f4ca1ad_DZR3QrYqv8H', 'filename': 'Video by sosove_official.mp4', 'title': 'Video by sosove_official', 'is_multiple': False}
